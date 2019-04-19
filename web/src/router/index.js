@@ -14,6 +14,7 @@ import MapsBO5 from '@/components/overlay/MapsBO5';
 import Teams from '@/components/overlay/Teams';
 import LogoCarousel from '@/components/overlay/LogoCarousel';
 import Countdown from '@/components/overlay/Countdown';
+import Host from '@/components/overlay/Host';
 
 Vue.use(Router);
 
@@ -78,6 +79,11 @@ export default new Router({
           path: 'teams',
           name: 'Teams',
           component: Teams
+        },
+        {
+          path: 'host',
+          name: 'Host',
+          component: Host
         },
         {
           path: 'logoCarousel',
