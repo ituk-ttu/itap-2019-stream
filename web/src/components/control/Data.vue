@@ -109,6 +109,9 @@
         if(data.countdown.running && this.countdownInterval == null) {
           this.startInterval();
         }
+        if(!data.countdown.running && this.countdownInterval != null) {
+          this.stopInterval();
+        }
         this.countdownLength = Math.floor(Math.max(0, data.countdown.targetTimestamp - Date.now()) / 1000);
       },
       teams: function (teams) {
@@ -151,15 +154,18 @@
         }, 1000);
       },
       stopCountdown: function () {
-          const countdown = {
-              running: false,
-              targetTimestamp: Date.now() + this.countdownLength * 1000
-          };
-          clearInterval(this.countdownInterval);
-          this.countdownInterval = null;
-          this.data.countdown = countdown;
-          this.dataBackup.countdown = countdown;
-          this.$socket.emit('setData', this.dataBackup);
+        const countdown = {
+          running: false,
+          targetTimestamp: Date.now() + this.countdownLength * 1000
+        };
+        this.stopInterval();
+        this.data.countdown = countdown;
+        this.dataBackup.countdown = countdown;
+        this.$socket.emit('setData', this.dataBackup);
+      },
+      stopInterval: function () {
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
       }
     }
   };
