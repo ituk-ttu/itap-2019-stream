@@ -1,0 +1,13 @@
+{
+  "port": 3090,
+  "password": "s",
+  "toornament": {
+    "id": "183759201746151734",
+    "key": "13i12jpi52jpo2j41i2hoi4ip1jp2j435joj2pj231v"
+  },
+  "obs": {
+    "ip": "localhost",
+    "port": "4444",
+    "password": "secret"
+  }
+}
