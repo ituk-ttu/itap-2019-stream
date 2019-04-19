@@ -106,6 +106,9 @@
       data: function (data) {
         this.data = data;
         this.dataBackup = { ...data };
+        if(data.countdown.running && this.countdownInterval == null) {
+          this.startInterval();
+        }
         this.countdownLength = Math.floor(Math.max(0, data.countdown.targetTimestamp - Date.now()) / 1000);
       },
       teams: function (teams) {
@@ -134,15 +137,18 @@
               running: true,
               targetTimestamp: Date.now() + this.countdownLength * 1000
           };
-          this.countdownInterval = setInterval(() => {
-              this.countdownLength = Math.floor(Math.max(0, this.data.countdown.targetTimestamp - Date.now()) / 1000);
-              if (this.countdownLength === 0) {
-                  this.stopCountdown();
-              }
-          }, 1000);
+          this.startInterval();
           this.data.countdown = countdown;
           this.dataBackup.countdown = countdown;
           this.$socket.emit('setData', this.dataBackup);
+      },
+      startInterval: function() {
+        this.countdownInterval = setInterval(() => {
+          this.countdownLength = Math.floor(Math.max(0, this.data.countdown.targetTimestamp - Date.now()) / 1000);
+          if (this.countdownLength === 0) {
+            this.stopCountdown();
+          }
+        }, 1000);
       },
       stopCountdown: function () {
           const countdown = {
@@ -150,6 +156,7 @@
               targetTimestamp: Date.now() + this.countdownLength * 1000
           };
           clearInterval(this.countdownInterval);
+          this.countdownInterval = null;
           this.data.countdown = countdown;
           this.dataBackup.countdown = countdown;
           this.$socket.emit('setData', this.dataBackup);
