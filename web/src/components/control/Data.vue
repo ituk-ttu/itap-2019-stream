@@ -1,10 +1,17 @@
 <template lang="pug">
   .container
     .panel.panel-default
-      .panel-heading Starting soon text
+      .panel-heading Countdown (seconds)
       .panel-body
-        .form-group
-          input.form-control(v-model="data.startingSoon.text")
+        .row
+          .col-xs-9
+            .form-group
+              input.form-control(v-model="countdownLength" :disabled="data.countdown.running")
+          .col-xs-3
+              button.btn.btn-primary.btn-block(v-if="!data.countdown.running" @click="startCountdown()")
+                | Start countdown
+              button.btn.btn-danger.btn-block(v-else @click="stopCountdown()")
+                | Stop countdown
     .panel.panel-default
       .panel-heading Casters
       .panel-body
@@ -84,6 +91,9 @@
         maps: [1, 2, 3, 4, 5],
         availableMaps: ['Cache', 'Dust2', 'Inferno', 'Mirage', 'Nuke', 'Overpass', 'Train'],
         data: null,
+        dataBackup: null,
+        countdownLength: 0,
+        countdownInterval: null,
         teams: [],
         nullTeam: {
           'id': '???',
@@ -95,6 +105,8 @@
     sockets: {
       data: function (data) {
         this.data = data;
+        this.dataBackup = { ...data };
+        this.countdownLength = Math.floor(Math.max(0, data.countdown.targetTimestamp - Date.now()) / 1000);
       },
       teams: function (teams) {
         this.teams = teams;
@@ -104,6 +116,7 @@
     methods: {
       saveData: function (scene) {
         this.$socket.emit('setData', this.data);
+        this.dataBackup = { ...this.data };
       },
       reset: function () {
         this.$socket.emit('getData');
@@ -115,6 +128,31 @@
         let temp = this.data.teams.left;
         this.data.teams.right = this.data.teams.left;
         this.data.teams.left = temp;
+      },
+      startCountdown: function () {
+          const countdown = {
+              running: true,
+              targetTimestamp: Date.now() + this.countdownLength * 1000
+          };
+          this.countdownInterval = setInterval(() => {
+              this.countdownLength = Math.floor(Math.max(0, this.data.countdown.targetTimestamp - Date.now()) / 1000);
+              if (this.countdownLength === 0) {
+                  this.stopCountdown();
+              }
+          }, 1000);
+          this.data.countdown = countdown;
+          this.dataBackup.countdown = countdown;
+          this.$socket.emit('setData', this.dataBackup);
+      },
+      stopCountdown: function () {
+          const countdown = {
+              running: false,
+              targetTimestamp: Date.now() + this.countdownLength * 1000
+          };
+          clearInterval(this.countdownInterval);
+          this.data.countdown = countdown;
+          this.dataBackup.countdown = countdown;
+          this.$socket.emit('setData', this.dataBackup);
       }
     }
   };
