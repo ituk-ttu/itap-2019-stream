@@ -222,139 +222,103 @@ function getGroupResults(teamName, rankingPosId, body) {
   })
 }
 
-function getGroups (matches) {
-  function compute (matches) {
-    let groups = {}
-    for (let match of matches.filter(match => match.stage_number === 1)) {
-      let groupId = match.group_number
-      let group = groups[groupId]
-      if (group == null) {
-        group = groups[groupId] = {
-          id: groupId,
-          finished: true,
-          teams: {},
-        }
-      }
-      for (let opponent of match.opponents) {
-        if (opponent.participant == null) {
-          continue
-        }
-        let teamId = opponent.participant.id
-        let team = group.teams[teamId]
-        if (team == null) {
-          team = group.teams[teamId] = {
-            id: teamId,
-            name: opponent.participant.name,
-            score: 0,
-          }
-        }
-        if (opponent.result in scoreByResult) {
-          team.score += scoreByResult[opponent.result]
-        }
-        if (match.status !== 'completed') {
-          group.finished = false
-        }
-      }
-    }
-    return groups
+const playoffMatches = {
+  1: {
+    0: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697885/',
+    1: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697888/',
+    2: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697894/',
+    3: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697897/',
+    4: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697882/',
+    5: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697891/',
+    6: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697879/'
+  },
+  2: {
+    0: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697909/',
+    1: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697915/',
+    2: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697906/',
+    3: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697912/',
+    4: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697903/',
+    5: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697900/'
+  },
+  3: {
+    0: 'https://www.toornament.com/tournaments/2428500586434699264/matches/2428561371944697876/'
   }
+};
 
-  function normalize (groups) {
-    let groupChars = '0ABCDEFGH'
-    return Object.values(groups).sort((a, b) => a.id - b.id).map(group => ({
-      id: group.id,
-      name: 'Grupp ' + groupChars.charAt(group.id),
-      finished: group.finished,
-      teams: Object.values(group.teams).
-        sort((a, b) => b.score - a.score).
-        map(team => ({
-          name: team.name,
-          score: team.score,
-        })),
-    })).map(group => {
-      let marked = 0
-      let scoreRequired = null
-      group.teams.forEach(team => {
-        if (marked < 2) {
-          marked++
-          team.willAdvance = true
-          scoreRequired = team.score
-        } else {
-          team.willAdvance = team.score >= scoreRequired
-        }
+function updatePlayoffs() {
+  playoffs = scrapePlayoffs();
+  io.emit('playoffs', playoffs);
+}
+
+function scrapePlayoffs() {
+
+  return Object.keys(playoffMatches).map(bracketKey => {
+    const bracket = playoffMatches[bracketKey];
+    return {
+      id: parseInt(bracketKey),
+      matches: Object.keys(bracket).map(matchKey => {
+        const matchUrl = bracket[matchKey];
+        return scrapeMatch(matchUrl);
       })
-      return group
-    })
-  }
-
-  return normalize(compute(matches))
+    };
+  });
 }
 
-function getPlayoffs (matches) {
-  function compute (matches) {
-    let groups = {}
-    for (let match of matches.filter(match => match.stage_number === 2)) {
-      let group = groups[match.group_number]
-      if (group == null) {
-        group = groups[match.group_number] = {
-          id: match.group_number,
-          rounds: {},
-        }
-      }
-      let round = group.rounds[match.round_number]
-      if (round == null) {
-        round = group.rounds[match.round_number] = {
-          id: match.round_number,
-          matches: {},
-        }
-      }
-      round.matches[match.number] = match
-    }
-    return groups
+function scrapeMatch(matchUrl) {
+  const body = syncRequest('GET', matchUrl,).getBody().toString();
+  const matchContainer = $('.match.format-header > .primary', body);
+  return {
+    leftOpponent: getMatchOpponent(matchContainer.find('.opponent-1')),
+    rightOpponent: getMatchOpponent(matchContainer.find('.opponent-2')),
+    state: getMatchState(matchContainer.find('.state')),
   }
 
-  function normalize (groups) {
-    return Object.values(groups).sort((a, b) => a.id - b.id).map(group => ({
-      id: group.id,
-      rounds: Object.values(group.rounds).
-        sort((a, b) => a.id - b.id).
-        map(round => ({
-          id: round.id,
-          matches: Object.values(round.matches).
-            sort((a, b) => a.id - b.id).
-            map(match => ({
-              finished: match.status === 'completed',
-              teams: getTeams(match),
-            })),
-        })),
-    }))
-
-  }
-
-  function getTeams (match) {
-    return fixScore(match.opponents.map(opponent => ({
-      name: opponent.participant != null ? opponent.participant.name : null,
-      isLoser: opponent.result === 3,
-      score: opponent.score != null ? opponent.score : 0,
-      result: opponent.result,
-    })))
-  }
-
-  function fixScore (teams) {
-    if (teams.some(team => team.score > 10)) {
-      for (let team of teams) {
-        team.score = team.result === 1 ? 1 : 0
-      }
-    }
-    return teams
-  }
-
-  return normalize(compute(matches))
 }
+function getMatchOpponent(opponentElement) {
+  const nameElem = opponentElement.find('.name');
+  if(nameElem.hasClass('disabled')) {
+    return null;
+  }
+  return nameElem.text();
+}
+function getMatchState(stateElem) {
+  const resultElem = stateElem.find('.result');
+  if (resultElem.length === 0) {
+    return {
+      state: 'NOT_PLAYED'
+    };
+  }
+  const leftScoreElem = resultElem.find('.result-1');
+  const rightScoreElem = resultElem.find('.result-2');
+  const leftScore = leftScoreElem.text();
+  const rightScore = rightScoreElem.text();
+  if (leftScoreElem.hasClass('win')) {
+    return {
+      state: 'LEFT_WIN',
+      leftScore,
+      rightScore
+    }
+  }
+  if (rightScoreElem.hasClass('win')) {
+    return {
+      state: 'RIGHT_WIN',
+      leftScore,
+      rightScore
+    }
+  }
+  return {
+    state: 'IN_PROGRESS',
+    leftScore,
+    rightScore
+  }
+}
+
 
 updateTeams();
 updateGroups();
+updatePlayoffs();
 setInterval(updateTeams, 60 * 1000);
 setInterval(updateGroups, 60 * 1000);
+setInterval(updatePlayoffs, 60 * 1000);
 
 
