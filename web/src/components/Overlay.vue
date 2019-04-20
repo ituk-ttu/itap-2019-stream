@@ -49,9 +49,6 @@
         return this.overlays.hasOwnProperty(this.$route.params.scene) &&
           this.overlays[this.$route.params.scene].hasOwnProperty(this.$route.name) &&
           this.overlays[this.$route.params.scene][this.$route.name].visible;
-      },
-      countdown: function () {
-        return '02:38';
       }
     }
   };
