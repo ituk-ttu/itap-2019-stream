@@ -3,6 +3,7 @@
   "version": "0.0.1-SNAPSHOT",
   "dependencies": {
     "chalk": "^2.3.0",
+    "cheerio": "^1.0.0-rc.3",
     "express": "^4.16.2",
     "obs-websocket-js": "^3.0.0",
     "request": "^2.83.0",

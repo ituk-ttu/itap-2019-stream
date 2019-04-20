@@ -1,25 +1,48 @@
 <template lang="pug">
-  div.groups
-    div.group(v-for="group in $parent.groups"
+  .groups
+    .group(v-for="group in $parent.groups"
               v-bind:class="$parent.isVisible && $parent.activeGroup === group.id ? '' : 'out'")
-      h1.title: span {{ group.name }}
-      div.team(v-for="team in group.teams" v-bind:class="!team.willAdvance && group.finished ? 'loser' : ''")
-        div.name: span {{ team.name }}
-        div.score: span {{ team.score }}
+      h1.title
+        | GRUPP
+        span.group-name  {{ group.name }}
+      .team(v-for="team in group.teams" v-bind:class="!team.willAdvance && group.finished ? 'loser' : ''")
+        .name {{ team.name }}
+        .scores
+          .score(v-for="result in team.results" :class="getResultClass(result)")
+        .total {{ getScore(team) }}
 
 </template>
 
 <script>
   export default {
-    name: 'Group'
-  };
+    name: 'Group',
+    methods: {
+      getResultClass: function(result) {
+        if (result === 'WIN') {
+          return 'score-win';
+        }
+        if (result === 'LOSS') {
+          return 'score-loss';
+        }
+        return 'score-not-played';
+      },
+      getScore: function (team) {
+        return team.results.filter(it => it === 'WIN').length;
+      }
+    }
+  }
 </script>
 
 <style lang="less" scoped>
+  @import "../../assets/less/tt-colors.less";
+  @import "../../assets/less/easing.less";
+
   .groups {
     height: 100%;
     width: 100%;
     position: relative;
+    background-image: url("../../assets/overlay/group-bg.png");
+    background-size: cover;
   }
   .group {
     position: absolute;
@@ -31,85 +54,60 @@
     justify-content: center;
     height: 100%;
     width: 100%;
-    font-family: 'Lato Black', sans-serif;
-    font-style: italic;
-    text-transform: uppercase;
+    font-family: 'proxima_nova_altblack', sans-serif;
+    transition: all 500ms @easeOutQuint;
+    transition-delay: 700ms;
     &.out {
-      .title, .team {
-        transform: translateY(100px);
-        opacity: 0;
-      }
+    transition-delay: 0ms;
+      opacity: 0;
+      transform: translateY(-100px);
     }
-    .title, .team {
-      transition-delay: 500ms !important;
-    }
-    @iterations: 5;
-    .teams-loop (@i) when (@i > 0) {
-      .team:nth-of-type(@{i}) {
-        transition-delay: (500ms - @i * 100ms) !important;
-      }
-      .teams-loop(@i - 1);
-    }
-    .teams-loop (@iterations);
   }
   .title {
-    transition: all 300ms cubic-bezier(0, 0.8, 1, 1);
-    margin: 0 0 75px;
-    font-size: 60px;
-    font-weight: 700;
-    width: 690px;
-    height: 120px;
-    padding: 20px;
-    box-sizing: border-box;
-    line-height: 80px;
+    font-size: 80pt;
     text-align: center;
-    background-image: url('../../assets/overlay/groups/header.svg');
-    span {
-      padding: 0 5px;
-      background: -webkit-linear-gradient(45deg, #d7d7d7, #fff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    margin-bottom: 40px;
+    color: @tt-white;
+    .group-name {
+      color: @tt-light-blue;
     }
   }
   .team {
-    transition: all 300ms cubic-bezier(0, 0.8, 1, 1);
-    margin: 0 0 40px;
+    margin: 10px 0;
     height: 75px;
-    line-height: 45px;
     display: flex;
-    font-size: 30px;
+    align-items: center;
+    justify-content: center;
+    font-size: 54px;
     .name {
-      font-weight: 900;
-      width: 608.3px;
-      padding: 15px;
+      width: 700px;
+      margin-left: -500px;
       box-sizing: border-box;
       line-height: 45px;
-      text-align: center;
-      background-image: url('../../assets/overlay/groups/team.svg');
-      span {
-        padding: 0 5px;
-        background: -webkit-linear-gradient(45deg, #d7d7d7, #fff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+      text-align: right;
+    }
+    .scores {
+      display: flex;
+      margin: 0 60px;
+      .score {
+        height: 30px;
+        width: 30px;
+        border-radius: 30px;
+        margin: 20px;
+        box-shadow: 0 0 25px fade(@tt-dark-blue, 0.7);
+        &.score-win {
+          background-color: @tt-light-blue;
+        }
+        &.score-loss {
+          background-color: @tt-magenta;
+        }
+        &.score-not-played {
+          background-color: @tt-white;
+        }
       }
     }
-    &.loser .name {
-      background-image: url('../../assets/overlay/groups/team-black.svg');
-    }
-    .score {
-      font-weight: 900;
-      margin-left: -24px;
-      text-align: center;
-      padding: 15px;
-      width: 119.7px;
-      line-height: 45px;
-      background: url('../../assets/overlay/groups/score.svg') no-repeat center;
-      span {
-        padding: 0 5px;
-        background: -webkit-linear-gradient(45deg, #333, #000);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
+    .total {
+      font-size: 64px;
     }
   }
 </style>

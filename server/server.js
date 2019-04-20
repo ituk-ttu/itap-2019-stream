@@ -5,7 +5,8 @@ const io = require('socket.io')(http)
 const fs = require('fs')
 const clk = require('chalk')
 const syncRequest = require('sync-request')
-const request = require('request')
+const request = require('request');
+const $ = require('cheerio');
 
 const config = JSON.parse(fs.readFileSync(__dirname + '/config/config.json'))
 let data = JSON.parse(fs.readFileSync(__dirname + '/config/data.json'))
@@ -105,7 +106,7 @@ io.on('connection', function (socket) {
   })
 
   socket.on('updateMatches', function () {
-    updateMatches()
+    updateGroups()
   })
 
   socket.on('setActiveGroup', function (newActiveGroup) {
@@ -162,40 +163,63 @@ app.get('/toggle/:overlay', (req, res) => {
 
 http.listen(config.port, function () {
   console.log('listening on *:' + config.port)
-})
+});
 
 function updateTeams () {
-  teams = JSON.parse(
-    syncRequest('GET',
-      'https://api.toornament.com/v1/tournaments/' + config.toornamentId +
-      '/participants',
-      {
-        'headers': {
-          'X-Api-Key': config.toornamentKey,
-        },
-      },
-    ).getBody())
+  const body = syncRequest('GET',
+    'https://www.toornament.com/tournaments/2428500586434699264/participants/',).getBody().toString();
+  teams = $('.participant > .identity > .name', body).toArray().map(it => ({ name: $(it).text() }));
 }
 
-function updateMatches () {
-  return request.get(
-    'https://api.toornament.com/v1/tournaments/' + config.toornamentId +
-    '/matches',
+function updateGroups () {
+  groups = [
     {
-      headers: {
-        'X-Api-Key': config.toornamentKey,
-      },
-      json: true,
+      ...scrapeGroup('https://www.toornament.com/tournaments/2428500586434699264/stages/' +
+      '2428547263918301184/groups/2428551003794432000/'),
+      id: 'A',
+      name: 'A',
+      finished: false
     },
-    (err, res, body) => {
-      if (err) {
-        return console.log(err)
+    {
+      ...scrapeGroup('https://www.toornament.com/tournaments/2428500586434699264/stages/' +
+        '2428547263918301184/groups/2428551003827986560/'),
+      id: 'B',
+      name: 'B',
+      finished: false
+    }
+  ];
+  io.emit('groups', groups)
+}
+function scrapeGroup(url) {
+  const body = syncRequest('GET', url,).getBody().toString();
+  const rankingContainers = $('.ranking-container', body).toArray();
+  return {
+    teams: rankingContainers.map(it => {
+      const container = $(it);
+      const rankingPosId = container.attr('data-toggle');
+      const teamName = container.find('.ranking-item .name').text();
+      return {
+        name: teamName,
+        results: getGroupResults(teamName, rankingPosId, body)
       }
-      groups = getGroups(body)
-      io.emit('groups', groups)
-      playoffs = getPlayoffs(body)
-      io.emit('playoffs', playoffs)
     })
+  };
+}
+
+function getGroupResults(teamName, rankingPosId, body) {
+  const rankingPos = $('#' + rankingPosId, body);
+  const matchRecords = rankingPos.find('.match > .record').toArray();
+  return matchRecords.map(it => {
+    const record = $(it);
+    const winner = record.find('.name.win');
+    if (winner.length === 0) {
+      return 'NOT_PLAYED';
+    }
+    if (winner.text() === teamName) {
+      return 'WIN';
+    }
+    return 'LOSS';
+  })
 }
 
 function getGroups (matches) {
@@ -328,8 +352,9 @@ function getPlayoffs (matches) {
   return normalize(compute(matches))
 }
 
-// FIXME: Those should probably no be commented out
-// updateMatches()
-// setInterval(updateMatches, 10 * 1000)
+updateTeams();
+updateGroups();
+setInterval(updateTeams, 60 * 1000);
+setInterval(updateGroups, 60 * 1000);
 
 
