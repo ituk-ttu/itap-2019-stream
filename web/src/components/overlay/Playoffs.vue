@@ -95,7 +95,7 @@
       .team {
         padding: 8px 20px;
         display: flex;
-
+        height: 55px;
         .name {
           flex-grow: 1;
         }
