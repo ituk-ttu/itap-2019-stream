@@ -6,18 +6,12 @@ const fs = require('fs')
 const clk = require('chalk')
 const syncRequest = require('sync-request')
 const request = require('request')
-const OBSWebSocket = require('obs-websocket-js');
 
-const obs = new OBSWebSocket();
 const config = JSON.parse(fs.readFileSync(__dirname + '/config/config.json'))
 let data = JSON.parse(fs.readFileSync(__dirname + '/config/data.json'))
 let show = false
-let scenes = []
 let teams = null
 let overlays = {}
-let transitions = []
-let programScene = null
-let previewScene = null
 
 let groups = null
 let activeGroup = 0
@@ -53,26 +47,6 @@ io.on('connection', function (socket) {
       socket.emit('authenticate', false)
     }
   })
-
-  socket.on('disconnect', function () {
-    if (socket.isOverlay) {
-      try {
-        for (var i = 0; i <
-        overlays[socket.overlay.scene][socket.overlay.overlay].sockets.length; i++) {
-          if (overlays[socket.overlay.scene][socket.overlay.overlay].sockets[i] ===
-            socket.id) {
-            overlays[socket.overlay.scene][socket.overlay.overlay].sockets.splice(
-              i, 1)
-            console.log('overlay lost')
-            break
-          }
-        }
-      } catch (ex) {
-        console.log('No such overlay')
-      }
-    }
-  })
-
   socket.on('setVisible', function (view) {
     if (socket.authed) {
       if (visibleViews[view.viewName] !== undefined) {
@@ -89,9 +63,6 @@ io.on('connection', function (socket) {
 
   socket.on('getAll', function () {
     socket.emit('all', {
-      program: programScene,
-      preview: previewScene,
-      scenes: scenes,
       transitions: transitions,
       overlays: overlays,
       groups: groups,
@@ -101,10 +72,6 @@ io.on('connection', function (socket) {
     })
   })
 
-  socket.on('getVisible', function () {
-    socket.emit('visible', visibleViews)
-  })
-
   socket.on('setData', function (newValue) {
     if (socket.authed) {
       data = newValue
@@ -112,13 +79,6 @@ io.on('connection', function (socket) {
       console.log(clk.green('Data updated!'))
     } else {
       console.log(clk.red('Not authed'))
-    }
-  })
-
-  socket.on('setPreview', function (sceneName) {
-    if (socket.authed) {
-      console.log('Changing preview scene to: ' + sceneName)
-      obs.send('SetPreviewScene', {"scene-name": sceneName})
     }
   })
 
@@ -166,25 +126,20 @@ io.on('connection', function (socket) {
   socket.on('overlayAvailable', function (data) {
     socket.isOverlay = true
     socket.overlay = data
-    if (!overlays.hasOwnProperty(data.scene)) {
-      overlays[data.scene] = {}
-    }
-    if (!overlays[data.scene].hasOwnProperty(data.overlay)) {
-      overlays[data.scene][data.overlay] = {
+    if (!overlays.hasOwnProperty(data.overlay)) {
+      overlays[data.overlay] = {
         visible: false,
-        name: data.overlay,
-        sockets: [],
+        name: data.overlay
       }
     }
-    overlays[data.scene][data.overlay].sockets.push(socket.id)
-    console.log('Connected ' + data.overlay + ' for ' + data.scene)
+    console.log('Connected ' + data.overlay)
     io.emit('overlays', overlays)
   })
 
   socket.on('setOverlayVisible', function (data) {
     if (socket.authed) {
       try {
-        overlays[data.scene][data.overlay].visible = data.boolean
+        overlays[data.overlay].visible = data.boolean
         io.emit('overlays', overlays)
       } catch (ex) {
         console.log('No such overlay')
@@ -192,23 +147,18 @@ io.on('connection', function (socket) {
     }
   })
 
-  socket.on('transition', function (transition) {
-    if (socket.authed) {
-      request(
-        'http://' + config.vmixIp + ':8088/api/?function=' + transition.command,
-        function () {
-          setTimeout(function () {
-            request('http://' + config.vmixIp + ':8088/API/',
-              function (error, response, body) {
-                previewScene = parsePreview(body)
-                programScene = parseProgram(body)
-                io.emit('preview', previewScene)
-                io.emit('program', programScene)
-              })
-          }, parseInt(transition.duration) + 50)
-        })
-    }
-  })
+})
+
+app.get('/toggle/:overlay', (req, res) => {
+  if (overlays.hasOwnProperty(req.params.overlay)) {
+    overlays[req.params.overlay].visible = !overlays[req.params.overlay].visible
+    res.send('OK!')
+  } else {
+    console.error('No overlay named ' + req.params.overlay)
+    console.error('Available overlays: ' + overlays)
+    res.send('ERR!')
+  }
+  io.emit('overlays', overlays)
 })
 
 http.listen(config.port, function () {
@@ -383,69 +333,4 @@ function getPlayoffs (matches) {
 // updateMatches()
 // setInterval(updateMatches, 10 * 1000)
 
-function updateScenes () {
-  obs.send('GetSceneList').then(res => {
-    console.log(res)
-    scenes = []
-    res.scenes.forEach(scene => scenes.push(scene.name));
-    console.log("Updated scenes! Available scenes: " + scenes);
-  });
-}
 
-function sceneHasOverlay (scene, overlay) {
-  overlays[scene].forEach(function (element) {
-    if (element.name === overlay) {
-      return true
-    }
-  })
-  return false
-}
-
-obs.on('error', err => {
-  console.error('socket error:', err);
-});
-
-obs.on('ConnectionOpened', () => {
-  updateScenes()
-})
-
-obs.on('PreviewSceneChanged', event => {
-  console.log("Got update! Broadcasting new preview scene: " + event['scene-name'])
-  io.emit('preview', event['scene-name'])
-})
-obs.on('SwitchScenes', event => {
-  console.log("Got update! Broadcasting new program scene: " + event['scene-name'])
-  io.emit('program', event['scene-name'])
-})
-obs.on('TransitionBegin', event => {
-  console.log("Got update! Transition " + event['name'] + " started! Transitioning form " +
-    event['from-scene'] + " to " + event['to-scene'] + ", duration " +
-    event['duration'] + "ms")
-})
-obs.on('TransitionListChanged', event => {
-  updateTransitions()
-})
-obs.on('TransitionDurationChanged', event => {
-  updateTransitions()
-})
-
-function updateTransitions () {
-  obs.sendCallback('GetTransitionList', transitions => {
-    console.log(transitions)
-  })
-}
-
-let obsWebSocketConnectionDetails;
-if (config.obs.password === '') {
-  obsWebSocketConnectionDetails = { address: config.obs.ip + ':' + config.obs.port };
-} else {
-  obsWebSocketConnectionDetails = { address: config.obs.ip + ':' + config.obs.port, password: config.obs.password };
-}
-obs.connect(obsWebSocketConnectionDetails).then(() => {
-  console.log('OBS connected!');
-  updateTransitions()
-  updateScenes()
-}).catch(err => {
-  console.error("Failed to connect to OBS!");
-  console.error(err);
-});

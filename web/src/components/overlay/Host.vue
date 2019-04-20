@@ -8,7 +8,7 @@
   import LowerThird from "./components/LowerThird.vue";
 
   export default {
-    name: 'Host',
+      name: 'Host',
     components: {LowerThird},
   };
 </script>

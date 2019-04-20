@@ -20,7 +20,6 @@
       this.$socket.emit('getGroups');
       this.$socket.emit('getPlayoffs');
       this.$socket.emit('overlayAvailable', {
-        scene: this.$route.params.scene,
         overlay: this.$route.name
       });
     },
@@ -46,9 +45,8 @@
     },
     computed: {
       isVisible: function () {
-        return this.overlays.hasOwnProperty(this.$route.params.scene) &&
-          this.overlays[this.$route.params.scene].hasOwnProperty(this.$route.name) &&
-          this.overlays[this.$route.params.scene][this.$route.name].visible;
+        return this.overlays.hasOwnProperty(this.$route.name) &&
+          this.overlays[this.$route.name].visible;
       }
     }
   };

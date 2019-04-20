@@ -37,7 +37,7 @@ export default new Router({
       ]
     },
     {
-      path: '/overlay/:scene',
+      path: '/overlay/',
       component: Overlay,
       children: [
         {

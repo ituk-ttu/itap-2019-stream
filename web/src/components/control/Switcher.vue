@@ -31,13 +31,10 @@
         .panel-heading.text-center Switcher
         .panel-body
           .text-center
-            .view-column(v-for="scene in view.scenes" v-if="scene.substring(0, 1) != '_'")
-              button.btn.btn-block.btn-lg(v-on:click="setPreview(scene)" v-bind:class="getSceneButtonClass(scene)")
-                | {{ scene }}
-              .overlays(v-if="sceneHasOverlays(scene)")
-                button.btn.btn-block(v-for="overlay in getSceneOverlays(scene)"
+              .overlays
+                button.btn.btn-block(v-for="overlay in view.overlays"
                 v-bind:class="overlay.visible ? 'btn-success' : 'btn-danger'"
-                v-on:click="setOverlayVisible(scene, overlay, !overlay.visible)")
+                v-on:click="setOverlayVisible(overlay, !overlay.visible)")
                   | {{ overlay.name }}
 </template>
 
@@ -55,10 +52,6 @@
           {name: 'Superfinaal', id: 3}
         ],
         view: {
-          program: null,
-          preview: null,
-          scenes: [],
-          transitions: [],
           overlays: {},
           groups: [],
           activeGroup: null
@@ -68,12 +61,6 @@
     sockets: {
       all: function (all) {
         this.view = all;
-      },
-      preview: function (scene) {
-        this.view.preview = scene;
-      },
-      program: function (scene) {
-        this.view.program = scene;
       },
       overlays: function (overlays) {
         this.view.overlays = overlays;
@@ -93,36 +80,14 @@
       }
     },
     methods: {
-      setPreview: function (scene) {
-        this.$socket.emit('setPreview', scene);
-      },
       setActiveGroup: function (groupId) {
         this.$socket.emit('setActiveGroup', groupId);
       },
       setActivePlayoffGroup: function (groupId) {
         this.$socket.emit('setActivePlayoffGroup', groupId);
       },
-      getSceneButtonClass: function (scene) {
-        if (scene === this.view.program) {
-          return 'btn-success';
-        } else if (scene === this.view.preview) {
-          return 'btn-primary';
-        } else {
-          return 'btn-danger';
-        }
-      },
-      makeTransition: function (transition) {
-        this.$socket.emit('transition', transition);
-      },
-      sceneHasOverlays: function (scene) {
-        return this.view.overlays.hasOwnProperty(scene);
-      },
-      getSceneOverlays: function (scene) {
-        return this.view.overlays[scene];
-      },
-      setOverlayVisible: function (scene, overlay, boolean) {
+      setOverlayVisible: function (overlay, boolean) {
         this.$socket.emit('setOverlayVisible', {
-          scene: scene,
           overlay: overlay.name,
           boolean: boolean
         });
