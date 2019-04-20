@@ -1,7 +1,7 @@
 
 <template lang="pug">
   div
-    .logos
+    .logos(:class="info.logosVisible ? 'logos-visible' : ''")
       .logo-grid(:class="logoPage === 0 ? '' : 'out'")
         sponsor-grid(:names="['ituk', 'itt', 'ye', 'arvutitark', 'lg', 'belief']" :big="true")
       .logo-grid(:class="logoPage === 1 ? '' : 'out'")
@@ -151,9 +151,7 @@
     clip-path: ~"polygon(100% calc(100% - 192px), 128px calc(100% - 192px), 128px calc(100% - 128px),
     64px calc(100% - 128px), 64px 100%, 0 100%, 0 0, 100% 0)";
     transition: all 500ms @easeOutQuint;
-      transition-delay: 200ms;
     &.logos-visible {
-      transition-delay: 0ms;
       margin-top: -800px;
       .tte-logo {
         transform: scale(2);
@@ -168,10 +166,19 @@
   }
   .logos {
     position: absolute;
-    padding: 280px 20px 20px 212px;
-    height: 100%;
+    padding: 0 20px 20px 212px;
+    height: ~"calc(100% - 280px)";
+    clip-path: ~"polygon(0 100%, 0 192px, 64px 192px, 64px 64px, 128px 64px, 128px 0, 100% 0, 100% 100%)";
     width: 100%;
-    bottom: 0;
+    bottom: -800px;
+    background-color: white;
+    transition: all 500ms @easeOutQuint;
+    &.logos-visible {
+      bottom: 0;
+      .tte-logo {
+        transform: scale(2);
+      }
+    }
   }
   .logo-grid {
     position: absolute;
