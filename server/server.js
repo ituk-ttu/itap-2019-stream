@@ -63,7 +63,6 @@ io.on('connection', function (socket) {
 
   socket.on('getAll', function () {
     socket.emit('all', {
-      transitions: transitions,
       overlays: overlays,
       groups: groups,
       activeGroup: activeGroup,
