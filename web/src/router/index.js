@@ -13,8 +13,8 @@ import MapsBO3 from '@/components/overlay/MapsBO3';
 import MapsBO5 from '@/components/overlay/MapsBO5';
 import Teams from '@/components/overlay/Teams';
 import LogoCarousel from '@/components/overlay/LogoCarousel';
-import Countdown from '@/components/overlay/Countdown';
-import Host from '@/components/overlay/Host';
+import Host from '../components/overlay/Host';
+import Waiting from "../components/overlay/Waiting";
 
 Vue.use(Router);
 
@@ -44,6 +44,11 @@ export default new Router({
           path: 'casters',
           name: 'Casters',
           component: Casters
+        },
+        {
+          path: 'host',
+          name: 'Host',
+          component: Host
         },
         {
           path: 'group',
@@ -81,19 +86,14 @@ export default new Router({
           component: Teams
         },
         {
-          path: 'host',
-          name: 'Host',
-          component: Host
-        },
-        {
           path: 'logoCarousel',
           name: 'LogoCarousel',
           component: LogoCarousel
         },
         {
-          path: 'countdown',
-          name: 'Countdown',
-          component: Countdown
+          path: 'waiting',
+          name: 'Waiting',
+          component: Waiting
         }
       ]
     }

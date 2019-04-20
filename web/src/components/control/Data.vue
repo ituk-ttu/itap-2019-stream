@@ -1,29 +1,75 @@
 <template lang="pug">
   .container
     .panel.panel-default
-      .panel-heading Starting soon text
+      .panel-heading Waiting screen
       .panel-body
-        .form-group
-          input.form-control(v-model="data.startingSoon.text")
-    .panel.panel-default
-      .panel-heading Casters
-      .panel-body
+        .row
+          .col-xs-12
+            label.control-label Waiting screen text
         .row
           .col-xs-6
             .form-group
-              label.control-label IGN
-              input.form-control(v-model="data.casters.left.name")
+              input.form-control(v-model="brbText")
+          .col-xs-3
             .form-group
-              label.control-label Info
-              input.form-control(v-model="data.casters.left.nick")
+              button.btn.btn-primary.btn-block(@click="updateBrb" :disabled="brbText === data.brb.text")
+                | Update
+          .col-xs-3
+            .form-group
+              button.btn.btn-primary.btn-block(v-if="!data.brb.visible" @click="showBrb")
+                | Show text
+              button.btn.btn-danger.btn-block(v-else @click="hideBrb")
+                | Hide text
+        .row
+          .col-xs-12
+            label.control-label Countdown (sec)
+        .row
           .col-xs-6
             .form-group
-              label.control-label IGN
-              input.form-control(v-model="data.casters.right.name")
-          .col-xs-6
+              input.form-control(v-model="countdownLength" :disabled="data.countdown.running")
+          .col-xs-3
             .form-group
-              label.control-label Info
-              input.form-control(v-model="data.casters.right.nick")
+              button.btn.btn-primary.btn-block(v-if="!data.countdown.running" @click="startCountdown")
+                | Start/show countdown
+              button.btn.btn-danger.btn-block(v-else @click="stopCountdown")
+                | Stop/hide countdown
+          .col-xs-3
+            .form-group
+              button.btn.btn-primary.btn-block(v-if="!data.logosVisible" @click="showLogos")
+                | Show logos
+              button.btn.btn-danger.btn-block(v-else @click="hideLogos")
+                | Hide logos
+    .row
+      .col-xs-8
+        .panel.panel-default
+          .panel-heading Casters
+          .panel-body
+            .row
+              .col-xs-6
+                .form-group
+                  label.control-label Name
+                  input.form-control(v-model="data.casters.left.name")
+                .form-group
+                  label.control-label Nick
+                  input.form-control(v-model="data.casters.left.nick")
+              .col-xs-6
+                .form-group
+                  label.control-label Name
+                  input.form-control(v-model="data.casters.right.name")
+              .col-xs-6
+                .form-group
+                  label.control-label Nick
+                  input.form-control(v-model="data.casters.right.nick")
+      .col-xs-4
+        .panel.panel-default
+          .panel-heading Host
+          .panel-body
+            .form-group
+              label.control-label Name
+              input.form-control(v-model="data.host.name")
+            .form-group
+              label.control-label Nick
+              input.form-control(v-model="data.host.nick")
     .panel.panel-default
       .panel-heading Team text
       .panel-body
@@ -84,6 +130,10 @@
         maps: [1, 2, 3, 4, 5],
         availableMaps: ['Cache', 'Dust2', 'Inferno', 'Mirage', 'Nuke', 'Overpass', 'Train'],
         data: null,
+        dataBackup: null,
+        countdownLength: 0,
+        countdownInterval: null,
+        brbText: "",
         teams: [],
         nullTeam: {
           'id': '???',
@@ -95,6 +145,15 @@
     sockets: {
       data: function (data) {
         this.data = data;
+        this.dataBackup = { ...data };
+        this.data.brbText = data.brb.text;
+        if(data.countdown.running && this.countdownInterval == null) {
+          this.startInterval();
+        }
+        if(!data.countdown.running && this.countdownInterval != null) {
+          this.stopInterval();
+        }
+        this.countdownLength = Math.floor(Math.max(0, data.countdown.targetTimestamp - Date.now()) / 1000);
       },
       teams: function (teams) {
         this.teams = teams;
@@ -104,6 +163,7 @@
     methods: {
       saveData: function (scene) {
         this.$socket.emit('setData', this.data);
+        this.dataBackup = { ...this.data };
       },
       reset: function () {
         this.$socket.emit('getData');
@@ -115,6 +175,64 @@
         let temp = this.data.teams.left;
         this.data.teams.right = this.data.teams.left;
         this.data.teams.left = temp;
+      },
+      startCountdown: function () {
+          const countdown = {
+              running: true,
+              targetTimestamp: Date.now() + this.countdownLength * 1000
+          };
+          this.startInterval();
+          this.data.countdown = countdown;
+          this.dataBackup.countdown = countdown;
+          this.$socket.emit('setData', this.dataBackup);
+      },
+      startInterval: function() {
+        this.countdownInterval = setInterval(() => {
+          this.countdownLength = Math.floor(Math.max(0, this.data.countdown.targetTimestamp - Date.now()) / 1000);
+        }, 1000);
+      },
+      stopCountdown: function () {
+        const countdown = {
+          running: false,
+          targetTimestamp: Date.now() + this.countdownLength * 1000
+        };
+        this.stopInterval();
+        this.data.countdown = countdown;
+        this.dataBackup.countdown = countdown;
+        this.$socket.emit('setData', this.dataBackup);
+        this.$socket.emit('setData', this.dataBackup);
+      },
+      stopInterval: function () {
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
+      },
+      updateBrb: function() {
+        this.data.brb.text = this.brbText;
+        this.saveBrb();
+      },
+      showBrb: function() {
+        this.data.brb.visible = true;
+        this.saveBrb();
+      },
+      hideBrb: function() {
+        this.data.brb.visible = false;
+        this.saveBrb();
+      },
+      saveBrb: function() {
+        this.dataBackup.brb = this.data.brb;
+        this.$socket.emit('setData', this.dataBackup);
+      },
+      showLogos: function() {
+        this.data.logosVisible = true;
+        this.saveShowLogos();
+      },
+      hideLogos: function() {
+        this.data.logosVisible = false;
+        this.saveShowLogos();
+      },
+      saveShowLogos: function() {
+        this.dataBackup.logosVisible = this.data.logosVisible;
+        this.$socket.emit('setData', this.dataBackup);
       }
     }
   };
