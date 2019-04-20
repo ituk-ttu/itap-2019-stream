@@ -107,6 +107,7 @@
       }
     }
     .total {
+      width: 60px;
       font-size: 64px;
     }
   }
