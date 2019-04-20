@@ -1,6 +1,6 @@
 <template lang="pug">
-  .row
-    sponsor.column(:class="sizeClasses" :name="name" v-for="name in names" :key="name")
+  .sponsor-container
+    sponsor.sponsor-item(:class="sizeClasses" :name="name" v-for="name in names" :key="name")
 </template>
 <script>
   import Sponsor from './Sponsor';
@@ -13,13 +13,31 @@
       big: Boolean
     },
     computed: {
-      sizeClasses: function() {
-        return this.big ? 'col-xs-4' : 'col-xs-3';
+      sizeClasses: function () {
+        return this.big ? 'item-big' : 'item-small';
       }
     }
   };
 </script>
-<style>
-
+<style lang="less" scoped>
+  .sponsor-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  .sponsor-item {
+    padding: 30px;
+    flex-shrink: 0;
+    &.item-big {
+      width: 30%;
+      display: flex;
+      height: 340px;
+      align-items: center;
+    }
+    &.item-small {
+      width: 16.6%;
+    }
+  }
 
 </style>

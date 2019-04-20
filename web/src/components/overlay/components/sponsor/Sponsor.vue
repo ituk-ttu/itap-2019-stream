@@ -1,5 +1,5 @@
 <template lang="pug">
-  a.sponsor(target="_blank" :href="url")
+  .sponsor
     img(:src="'../../../static/sponsors/' + image" :style="'transform: scale(' + scale + ');'")
 </template>
 <script>
@@ -95,26 +95,31 @@
             url: 'https://telia.ee',
             image: 'logo-telia.svg',
             scale: 0.85
+          },
+          obvan: {
+            url: 'https://www.theobvan.com/',
+            image: 'obvan.png',
+            scale: 1.0
           }
         }
       };
     },
     computed: {
-      url: function() {
-        return this.sponsors[this.name].url;
-      },
-      image: function() {
+      image: function () {
         return this.sponsors[this.name].image;
       },
-      scale: function() {
+      scale: function () {
         return this.sponsors[this.name].scale;
       }
     }
   };
 </script>
-<style>
+<style lang="less" scoped>
   .sponsor {
     text-align: center;
+    img {
+      width: 100%;
+    }
   }
 
 </style>

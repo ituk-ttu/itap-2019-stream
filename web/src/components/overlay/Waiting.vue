@@ -1,24 +1,36 @@
 
 <template lang="pug">
-  div.background(:class="info.logosVisible ? 'logos-visible' : ''")
-    .full-container
-      p.brbText(:class="brb.visible ? '' : 'out'") {{ brb.text }}
-      .tte-logo
-        p.tt-text TAL
-        p.tt-text TECH
-        p E-SPORT
-      p.countdown(:class="countdownRunning ? '' : 'out'") {{ countdownDisplay }}
+  div
+    .logos
+      .logo-grid(:class="logoPage === 0 ? '' : 'out'")
+        sponsor-grid(:names="['ituk', 'itt', 'ye', 'arvutitark', 'lg', 'belief']" :big="true")
+      .logo-grid(:class="logoPage === 1 ? '' : 'out'")
+        sponsor-grid(:names="['gamdias', 'networkTomorrow', 'msi', 'obvan', 'roccat', 'speedlink']" :big="true")
+      .logo-grid(:class="logoPage === 2 ? '' : 'out'")
+        sponsor-grid(:names="['filmiklubi', 'thorgate', 'photopoint', 'nissan', 'xgr', 'telia']" :big="true")
+    div.background(:class="info.logosVisible ? 'logos-visible' : ''")
+      .full-container
+        p.brbText(:class="brb.visible ? '' : 'out'") {{ brb.text }}
+        .tte-logo
+          p.tt-text TAL
+          p.tt-text TECH
+          p E-SPORT
+        p.countdown(:class="countdownRunning ? '' : 'out'") {{ countdownDisplay }}
 </template>
 
 <script>
+  import SponsorGrid from "./components/sponsor/SponsorGrid";
   export default {
     name: 'Waiting',
+    components: {SponsorGrid},
     data: function() {
       return {
         countdownDisplay: "",
         targetTimestamp: 0,
         interval: null,
-        countdownRunning: false
+        countdownRunning: false,
+        logoPage: null,
+        logoInterval: null
       }
     },
     computed: {
@@ -31,6 +43,7 @@
     },
     watch: {
       info: function(newVal, oldVal) {
+        this.logosVisibleWatch(newVal.logosVisible);
         if (newVal.countdown == null) {
           return;
         }
@@ -44,6 +57,7 @@
           this.interval = setInterval(this.renderCountdown, 50);
         } else {
           clearInterval(this.interval);
+          this.interval = 0;
         }
       }
     },
@@ -51,6 +65,18 @@
       this.renderCountdown();
     },
     methods: {
+      logosVisibleWatch: function (logosVisible) {
+        const self = this;
+        console.log(logosVisible);
+        if (logosVisible && self.logoInterval == null) {
+          self.logoPage = 0;
+          self.logoInterval = setInterval(() => self.logoPage = (self.logoPage + 1) % 3, 10000);
+        } else if(!logosVisible && self.logoInterval != null) {
+          clearInterval(self.logoInterval);
+          self.logoPage = null;
+          self.logoInterval = null;
+        }
+      },
       renderCountdown: function () {
         const timeRemaining = Math.floor(Math.max(0, this.targetTimestamp - Date.now()) / 1000);
         const secondsRemaining = timeRemaining % 60;
@@ -125,7 +151,9 @@
     clip-path: ~"polygon(100% calc(100% - 192px), 128px calc(100% - 192px), 128px calc(100% - 128px),
     64px calc(100% - 128px), 64px 100%, 0 100%, 0 0, 100% 0)";
     transition: all 500ms @easeOutQuint;
+      transition-delay: 200ms;
     &.logos-visible {
+      transition-delay: 0ms;
       margin-top: -800px;
       .tte-logo {
         transform: scale(2);
@@ -137,5 +165,25 @@
     width: 100vw;
     overflow: hidden;
     position: relative;
+  }
+  .logos {
+    position: absolute;
+    padding: 280px 20px 20px 212px;
+    height: 100%;
+    width: 100%;
+    bottom: 0;
+  }
+  .logo-grid {
+    position: absolute;
+    height: 800px;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    transition: all 500ms @easeInOutQuad;
+    &.out {
+      opacity: 0;
+    }
   }
 </style>
