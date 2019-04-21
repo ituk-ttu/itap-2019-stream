@@ -18,6 +18,7 @@ let groups = null
 let activeGroup = 0
 let playoffs = null
 let activePlayoffGroup = 0
+let activeMatch = null
 
 const scoreByResult = {
   1: 3,
@@ -69,6 +70,7 @@ io.on('connection', function (socket) {
       activeGroup: activeGroup,
       playoffs: playoffs,
       activePlayoffGroup: activePlayoffGroup,
+      activeMatch: activeMatch
     })
   })
 
@@ -103,6 +105,7 @@ io.on('connection', function (socket) {
   socket.on('getPlayoffs', function () {
     socket.emit('playoffs', playoffs)
     socket.emit('activePlayoffGroup', activePlayoffGroup)
+    socket.emit('activeMatch', activeMatch)
   })
 
   socket.on('updateMatches', function () {
@@ -117,6 +120,12 @@ io.on('connection', function (socket) {
   socket.on('setActivePlayoffGroup', function (newActivePlayoffGroup) {
     activePlayoffGroup = newActivePlayoffGroup
     io.emit('activePlayoffGroup', activePlayoffGroup)
+  })
+
+
+  socket.on('setActiveMatch', function (newActiveMatch) {
+    activeMatch = newActiveMatch
+    io.emit('activeMatch', activeMatch)
   })
 
   socket.on('saveToFile', function () {
