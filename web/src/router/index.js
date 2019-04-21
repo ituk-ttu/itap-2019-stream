@@ -15,6 +15,7 @@ import Teams from '@/components/overlay/Teams';
 import LogoCarousel from '@/components/overlay/LogoCarousel';
 import Host from '../components/overlay/Host';
 import Waiting from "../components/overlay/Waiting";
+import Match from "../components/overlay/Match";
 
 Vue.use(Router);
 
@@ -54,6 +55,11 @@ export default new Router({
           path: 'group',
           name: 'Group',
           component: Group
+        },
+        {
+            path: 'match',
+          name: 'Match',
+          component: Match
         },
         {
           path: 'startingSoon',

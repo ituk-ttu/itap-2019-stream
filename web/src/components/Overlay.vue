@@ -12,7 +12,8 @@
         groups: [],
         activeGroup: 0,
         playoffs: [],
-        activePlayoffGroup: 0
+        activePlayoffGroup: 0,
+        activeMatch: null
       };
     },
     mounted: function () {
@@ -41,6 +42,9 @@
       },
       activePlayoffGroup: function (activePlayoffGroup) {
         this.activePlayoffGroup = activePlayoffGroup;
+      },
+      activeMatch: function (activeMatch) {
+        this.activeMatch = activeMatch;
       }
     },
     computed: {

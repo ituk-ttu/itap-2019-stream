@@ -2,6 +2,16 @@
   .container.switcher-container
     div.panel-wrapper
       .panel.panel-default.transition-panel
+        .panel-heading.text-center Active match
+        .panel-body
+          .text-center
+            button.btn.btn-lg(v-on:click="setActiveMatch(null)"
+            v-bind:class="view.activePlayoffGroup === 0? 'btn-danger' : 'btn-info'")
+              | Ei kuvata
+            button.btn.btn-lg(v-for="match in matches"  v-on:click="setActiveMatch(match.id)"
+            v-bind:class="match.id === view.activeMatch ? 'btn-success' : 'btn-info'")
+              | {{ match.name }}
+      .panel.panel-default.transition-panel
         .panel-heading.text-center Active bracker
         .panel-body
           .text-center
@@ -51,10 +61,17 @@
           {name: 'Lower bracket', id: 2},
           {name: 'Superfinaal', id: 3}
         ],
+        matches: [
+          {name: 'Lower finals', id: 'LOSER_FINAL'},
+          {name: 'Upper finals', id: 'UPPER_FINAL'},
+          {name: 'Final finals', id: 'FINAL'}
+        ],
         view: {
           overlays: {},
           groups: [],
-          activeGroup: null
+          activeGroup: null,
+          activePlayoffGroup: 0,
+          activeMatch: null
         }
       };
     },
@@ -77,6 +94,10 @@
       activePlayoffGroup: function (activePlayoffGroup) {
         this.view.activePlayoffGroup = activePlayoffGroup;
         this.$forceUpdate();
+      },
+      activeMatch: function (activeMatch) {
+        this.view.activeMatch = activeMatch;
+        this.$forceUpdate();
       }
     },
     methods: {
@@ -85,6 +106,9 @@
       },
       setActivePlayoffGroup: function (groupId) {
         this.$socket.emit('setActivePlayoffGroup', groupId);
+      },
+      setActiveMatch: function (matchId) {
+        this.$socket.emit('setActiveMatch', matchId);
       },
       setOverlayVisible: function (overlay, boolean) {
         this.$socket.emit('setOverlayVisible', {
@@ -123,7 +147,6 @@
       }
     }
   }
-
   .transition-panel {
     .btn {
       margin: 10px;
