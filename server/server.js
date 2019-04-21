@@ -271,9 +271,32 @@ function scrapeMatch(matchUrl) {
     leftOpponent: getMatchOpponent(matchContainer.find('.opponent-1')),
     rightOpponent: getMatchOpponent(matchContainer.find('.opponent-2')),
     state: getMatchState(matchContainer.find('.state')),
-  }
-
+    maps: $('.page .size-content', body).last().find('.match.format-info').toArray().map((elem) => getMatchMap($(elem)))
+  };
 }
+
+function getMatchMap(mapElem) {
+  const mapProperty = mapElem.find('.properties')
+                             .toArray()
+                             .map(it => $(it))
+                             .find(it => it.find('.name').text() === 'Map');
+  const mapName = mapProperty != null ? mapProperty.find('.value').text() : null;
+  const opponentsElems = mapElem.find('.record').find('.opponent:not(.header)');
+  const leftScoreElem = opponentsElems.first().find('.result');
+  const rightScoreElem = opponentsElems.last().find('.result');
+  const leftScore = leftScoreElem.text().trim();
+  const rightScore = rightScoreElem.text().trim();
+  const status = leftScoreElem.hasClass('win') ? 'LEFT_WIN' :
+                 rightScoreElem.hasClass('win') ? 'RIGHT_WIN' :
+                 'NOT_PLAYED';
+  return {
+    name: mapName,
+    leftScore,
+    rightScore,
+    status
+  }
+}
+
 function getMatchOpponent(opponentElement) {
   const nameElem = opponentElement.find('.name');
   if(nameElem.hasClass('disabled')) {
