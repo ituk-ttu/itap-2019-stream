@@ -64,7 +64,8 @@
         matches: [
           {name: 'Lower finals', id: 'LOSER_FINAL'},
           {name: 'Upper finals', id: 'UPPER_FINAL'},
-          {name: 'Final finals', id: 'FINAL'}
+          {name: 'Final finals', id: 'FINAL'},
+          {name: 'THANKS', id: 'THANKS'}
         ],
         view: {
           overlays: {},

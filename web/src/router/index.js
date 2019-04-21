@@ -16,6 +16,7 @@ import LogoCarousel from '@/components/overlay/LogoCarousel';
 import Host from '../components/overlay/Host';
 import Waiting from "../components/overlay/Waiting";
 import Match from "../components/overlay/Match";
+import Thanks from "../components/overlay/Thanks";
 
 Vue.use(Router);
 
@@ -57,9 +58,14 @@ export default new Router({
           component: Group
         },
         {
-            path: 'match',
+          path: 'match',
           name: 'Match',
           component: Match
+        },
+        {
+          path: 'thanks',
+          name: 'Thanks',
+          component: Thanks
         },
         {
           path: 'startingSoon',
