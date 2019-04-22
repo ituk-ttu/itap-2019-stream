@@ -60,6 +60,7 @@
     'Alexander Alexandrov',
     'Mihkel Kaarma',
     'Tõnis Vaino',
+    'Pearu Vaalma',
     '•••',
     'TalTechi IT-teaduskonna üliõpilaskogu',
     'TalTechi infotehnoloogia teaduskond',
