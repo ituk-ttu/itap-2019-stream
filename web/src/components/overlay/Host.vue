@@ -1,14 +1,16 @@
 <template lang="pug">
   div
-    lower-third(:name="$parent.info.host.name" :nick="$parent.info.host.nick"
-      :isVisible="$parent.isVisible" position="right" colorScheme="normal")
+    lower-third(:name="$parent.info.schedule[$parent.info.active].name"
+      :job="$parent.info.schedule[$parent.info.active].job"
+      :from="$parent.info.schedule[$parent.info.active].from"
+      :isVisible="$parent.isVisible")
 </template>
 
 <script>
-  import LowerThird from "./components/LowerThird.vue";
+  import LowerThird from './components/LowerThird.vue';
 
   export default {
-      name: 'Host',
-    components: {LowerThird},
+    name: 'Host',
+    components: {LowerThird}
   };
 </script>

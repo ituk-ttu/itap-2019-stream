@@ -1,6 +1,6 @@
-# esport-2018-winter-stream-web
+# IT-ametite-päev-2019-stream-web
 
-> Web application for displaying and controlling graphics on  the live broadcast of TTÜ e-Sport 2018 Winter CS:GO tournament.
+> Web application for displaying and controlling graphics on  the live broadcast of IT-ametite päev 2019.
 
 ## Build Setup
 

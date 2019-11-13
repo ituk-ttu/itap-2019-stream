@@ -4,33 +4,20 @@
       .caster-name-container
         .caster-name-text-container
           p.caster-name {{ name }}
-          p.caster-nick &ldquo;{{ nick }}&rdquo;
+          p.caster-nick(v-if="job !== ''") {{ job }} | {{ from }}
 </template>
 
 <script>
-
-  const positionClasses = {
-    left: 'caster-left',
-    right: 'caster-right'
-  };
-
-  const colorSchemeClasses = {
-    normal: 'caster-color-normal',
-    inverted: 'caster-color-inverted'
-  };
-
   export default {
     name: 'LowerThird',
-    props: ['name', 'nick', 'position', 'colorScheme', 'isVisible'],
+    props: ['name', 'job', 'from', 'isVisible'],
     computed: {
-      classes: function() {
+      classes: function () {
         const result = [];
         if (!this.isVisible) {
           result.push('out');
         }
-        result.push(positionClasses[this.position])
-        result.push(colorSchemeClasses[this.colorScheme])
-        return result
+        return result;
       }
     }
   };
@@ -43,45 +30,31 @@
   /* ANIMATIONS */
 
   .caster {
-    &.caster-left {
-      .caster-name-container {
-        transform-origin: 0 50%;
-      }
-    }
-    &.caster-right {
-      .caster-name-container {
-        transform-origin: 100% 50%;
-      }
-    }
     .color-bar {
-      transition: all 300ms @easeOutBounce;
+      transform: translateX(0);
+      transition-duration: 2s;
       transition-delay: 0ms;
+      transition-timing-function:@easeOutSine;
     }
     .caster-name-container {
-      transition: all 300ms @easeOutCubic;
-      transition-delay: 350ms;
-      .caster-name-text-container {
-        transition: all 100ms @easeOutCubic;
-        transition-delay: 550ms;
-      }
+      transform: translateX(0);
+      transition-duration: 2s;
+      transition-delay: 0ms;
+      transition-timing-function:@easeOutSine;
     }
     &.out {
       .caster-name-container {
-        transform: scaleX(0);
+        transform: translateX(-960px);
+        transition-duration: 2s;
         transition-delay: 0ms;
-        transition-timing-function: @easeInCubic;
-
-        .caster-name-text-container {
-          transform: scaleY(0);
-          transition-delay: 0ms;
-          transition-timing-function: @easeInCubic;
-        }
+        transition-timing-function:@easeInSine;
       }
 
       .color-bar {
-        transform: scaleY(0);
-        transition-timing-function: @easeInBounce;
-        transition-delay: 350ms;
+        transform: translateX(-960px);
+        transition-delay: 0ms;
+        transition-duration: 2s;
+        transition-timing-function: @easeInSine;
       }
     }
   }
@@ -89,38 +62,20 @@
   /* COLOR */
 
   .caster {
-    &.caster-color-normal {
       .color-bar {
-        background-color: @tt-dark-blue;
+        background-color: @tt-ityk-red;
       }
       .caster-name-container {
-        background-color: @tt-magenta;
+        background-color: @tt-white;
         .caster-name-text-container {
           .caster-name {
-            color: @tt-dark-blue;
+            color: @tt-black;
           }
           .caster-nick {
-            color: @tt-white;
+            color: @tt-black;
           }
         }
       }
-    }
-    &.caster-color-inverted {
-      .color-bar {
-        background-color: @tt-magenta;
-      }
-      .caster-name-container {
-        background-color: @tt-dark-blue;
-        .caster-name-text-container {
-          .caster-name {
-            color: @tt-magenta;
-          }
-          .caster-nick {
-            color: @tt-white;
-          }
-        }
-      }
-    }
   }
 
   /* OTHER */
@@ -128,46 +83,34 @@
   .caster {
     display: block;
     position: absolute;
-    bottom: 100px;
-    height: 115px;
+    bottom: 0;
+    height: 161px;
+    left: 0;
+    text-align: left;
     .color-bar {
-      width: 30px;
+      width: 80px;
       height: 100%;
       z-index: 2147483647;
-    }
-    &.caster-left {
-      left: 100px;
-      text-align: left;
-      .color-bar {
-        float: left;
-      }
-    }
-    &.caster-right {
-      right: 100px;
-      text-align: right;
-      .color-bar {
-        float: right;
-      }
+      float: right;
     }
 
     .caster-name-container {
       z-index: -999;
       height: 100%;
       display: inline-block;
-      padding: 0 15px;
+      padding: 0 60px 0 30px;
       p {
-        text-transform: uppercase;
         &.caster-name {
-          font-family: 'proxima_nova_altbold', sans-serif;
+          text-transform: uppercase;
+          font-family: 'Raleway SemiBold', sans-serif;
           margin: 0;
-          font-size: 21pt;
-          padding: 10px 10px 0;
+          font-size: 60px;
+          padding: 15px 0 0 0;
         }
         &.caster-nick {
-          font-family: 'proxima_nova_altblack', sans-serif;
-          padding: 0 10px 10px;
-          font-size: 36pt;
-          margin: -10px 0 0;
+          font-family: 'Raleway', sans-serif;
+          margin: -10px 0 0 0;
+          font-size: 36px;
         }
       }
     }

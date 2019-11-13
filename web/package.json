@@ -1,7 +1,7 @@
 {
-  "name": "esport-2019-spring-broadcast",
+  "name": "itap-2019-stream",
   "version": "1.0.0",
-  "description": "Web application for displaying and controlling graphics on  the live broadcast of TTÜ e-Sport 2019 Spring CS:GO tournament.",
+  "description": "Web application for displaying and controlling graphics on  the live broadcast of IT ametite päev 2019.",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",

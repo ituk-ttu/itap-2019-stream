@@ -1,87 +1,65 @@
 <template lang="pug">
   .background
-    .thanks(:class="$parent.activeMatch === 'THANKS' ? '' : 'out'")
+    .thanks(:class="$parent.isVisible ? '' : 'out'")
       .header
-        .logo
-          p TAL
-          p TECH
-          p E-SPORT
+        img(src="../../assets/ituk.horisontal.long.color.nottu.svg").logo
         .text tänab:
-      .nice Oli meeldiv!
       .scroll-container
         .scroll
           .people.group
             p(v-for="person in people") {{ person }}
-    .end(:class="$parent.activeMatch === 'THANKS' ? '' : 'out'")
+    .end(:class="$parent.isVisible ? '' : 'out'")
+    .color-bar
+      img(src="../../assets/ituk.symbol.colored.svg")
 
 </template>
 
 <script>
   const people = [
-    'Rasmus Rüngenen',
-    'Karl Juhan Küling',
-    'Andri Luik',
-    'Krista Vaabel',
-    'Mikk Margus Möll',
-    'Roland Eerik',
-    'Sten Ärm',
-    'Alex Bindevald',
-    'Rait Kulbok',
-    'Jan Joonas Parve',
-    'Ragnar Kaseorg',
-    'Priit Päll',
-    'Martin Kalvik',
-    'Tormi Peterson',
-    'Alo Pullmann',
-    'Rasmus Koit',
-    'Oskar Mihhailov',
-    'Märt Valdin',
-    'Emily Joy Krohn',
-    'Tõnis Lind',
-    'Margo Raja',
+    'Helena Väinmaa',
+    'Raimond Lume',
     'Lauri Kukk',
+    'Priit Päll',
+    'Aneta C. Mattila',
+    'Andres Eelma',
+    'Annabel Tsarjov',
+    'Maarja Hoop',
+    'Katrin Selin',
+    'Ilja Samoilov',
+    'Robert Vassel',
+    'Maria Rizo',
+    'Kristjan Variksoo',
+    'Kaur Palang',
+    'Rait Kulbok',
     'Polina Rubtsova',
-    'Jaagup Kümmel',
-    'Johannes Kümmel',
     'Kaupo Kuusemäe',
-    'Siim Pajusaar',
-    'Martin Raid',
-    'Henri Lumiste',
-    'Martin Uiboupin',
-    'Tõnis Piirits',
-    'Sigrid Vollmer',
-    'Raine Mäe',
-    'Max Frolov',
+    'Nils-Emil Lille',
+    '...',
+    'Gert Jervan',
+    'Ago Luberg',
+    'Ago Uibo',
+    'Egert Ebruk',
+    'Lauri Greenbaum',
+    'Kertu Pikk',
+    'Liisi Räim',
+    'Marek Õunpuu',
+    'Martin Valler',
     'Kristjan Hiis',
-    'Imre Lebedev',
-    'Peeter Sikk',
-    'Ander Kivissaar',
-    'Heiti Heli',
-    'Alexander Alexandrov',
-    'Mihkel Kaarma',
-    'Tõnis Vaino',
-    'Pearu Vaalma',
-    '•••',
-    'TalTechi IT-teaduskonna üliõpilaskogu',
-    'TalTechi infotehnoloogia teaduskond',
-    'TalTechi üliõpilasesindus',
-    'Arvutitark',
-    'LG',
-    'Belief',
-    'Network Tomorrow',
-    'MSI',
-    'The Outdoor Broadcasting Van',
-    'TalTechi filmiklubi',
-    'Thorgate',
-    'Gamdias',
-    'Photopoint',
-    'Nissan',
-    'Roccat',
-    'Speedlink',
-    'X Game Room',
-    'Telia',
-    '•••',
-    'ja kõik teised, kes meid aidanud on!'
+    '...',
+    'Finestmedia',
+    'Nortal',
+    'SEB',
+    'Ericsson',
+    'Avalanche Labs',
+    'Omniva',
+    'Vali IT!',
+    'Icefire',
+    'Pipedrive',
+    '...',
+    'Mektory',
+    'TalTech Kolledž',
+    'TalTech IT-teaduskond',
+    'Event Media'
   ];
 
   export default {
@@ -103,7 +81,7 @@
   @import "../../assets/less/easing.less";
 
 
-  @scroll: 5150;
+  @scroll: 3600;
   @scrollH: @scroll + 0px;
   @headerDelay: 0ms;
   @headerTime: 900ms;
@@ -116,11 +94,29 @@
   @niceDelay: @logoDelay + @logoTime - 1000ms;
   @niceTime: 1000ms;
 
+
+  .color-bar img {
+    width: 60px;
+    height: 60px;
+    z-index: 2147483647;
+    float: right;
+    padding: 0;
+    margin-top: 10px;
+    margin-right: 10px;
+  }
+
+  .color-bar  {
+    background-color: @tt-ityk-red;
+    width: 80px;
+    height: 100vh;
+    z-index: 2147483647;
+    float: right;
+  }
   .background {
     height: 100%;
     width: 100%;
     position: relative;
-    background-image: url("../../assets/overlay/bracket-bg.png");
+    background-color: @tt-white;
     background-size: cover;
   }
   .thanks, .end {
@@ -130,8 +126,8 @@
     left: 0;
     height: 100%;
     width: 100%;
-    font-family: 'proxima_nova_altblack', sans-serif;
-    color: @tt-white;
+    font-family: 'Raleway SemiBold', sans-serif;
+    color: @tt-black ;
   }
   .thanks {
     transition: all @thanksTime @easeOutQuint;
@@ -151,23 +147,25 @@
       transition-delay: @headerDelay;
       transform: translateY(0);
       .logo {
-        transform: translateY(250px) translateX(-37px) scale(3.0);
+        transform: translateY(350px) translateX(88px) scale(3.0);
         transition: all @logoTime @easeOutQuint;
         transition-delay: @logoDelay;
       }
       .text {
-        font-family: 'proxima_nova_altbold', sans-serif;
+        font-family: 'Raleway SemiBold', sans-serif;
         transition: all @thanksTime @easeOutQuint @thanksDelay;
         opacity: 0;
         padding-left: 30px;
         overflow: hidden;
         text-align: right;
+        margin-top: auto;
+        margin-bottom: auto;
       }
     }
     .nice {
       height: 50px;
       text-align: center;
-      font-family: 'proxima_nova_ltthin', sans-serif;
+      font-family: 'raleway', sans-serif;
       transform: translateY(450px);
       font-size: 180px;
       transition: all @niceTime @easeOutQuint;
@@ -178,7 +176,7 @@
       height: 700px;
       mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
       .scroll {
-        font-family: 'proxima_nova_ltthin', sans-serif;
+        font-family: 'raleway', sans-serif;
         text-align: center;
         transition: transform @scrollTime linear;
         transition-delay: @scrollDelay;
